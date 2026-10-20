@@ -27,4 +27,8 @@ class CppBridge:
         """表达式求值"""
         return self._calculator.evaluate(expr)
 
+    def cosine_similarity(self,a:list,b:list)->float:
+        """C++ 余弦相似度"""
+        return cpp_core.cosine_similarity(a,b)    
+
 cpp_bridge=CppBridge()
