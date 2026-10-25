@@ -12,10 +12,6 @@ async def verify_token(authorization:str=Header(None)):
         raise HTTPException(status_code=403,detail="无效token")
     return token        
 
-@router.post("/documents")
-async def add_documents(req:AddDocsRequest,token:str=Depends(verify_token)):
-    count=vector_store.add_documents(req.documents)
-    return {"code":0,"data":{"added":count,"total":vector_store.count()},"message":"ok"}
 
 @router.post("/retrieve")
 async def retrieve(req:RetrieveRequest,token:str=Depends(verify_token)):
