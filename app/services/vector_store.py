@@ -3,9 +3,21 @@ from chromadb.config import Settings
 import hashlib
 import os
 from app.services.cpp_bridge import cpp_bridge
+from langchain_core.retrievers import BaseRetriever
+from langchain_core.documents import Document
+from typing import List
+from pydantic import Field
 
 # 持久化目录
 CHROMA_DIR = os.path.join(os.path.dirname(os.path.dirname(os.path.dirname(__file__))), "chroma_db")
+
+class CppRetriever(BaseRetriever):
+    """使用C++分词器的自定义Retriever"""
+    store:object=Field(...)
+
+    def _get_relevant_documents(self,query:str)->List[Document]:
+        results=self.store.similarity_search(query,n_results=3)
+        return [Document(page_content=r)for r in results]
 
 
 class VectorStore:
@@ -51,6 +63,9 @@ class VectorStore:
 
     def count(self):
         return self.collection.count()
+    
+    def as_retriever(self,**kwargs):
+        return CppRetriever(store=self)
 
 
 vector_store = VectorStore()
