@@ -3,6 +3,7 @@ from chromadb.config import Settings
 import hashlib
 import os
 from app.services.cpp_bridge import cpp_bridge
+from app.services.reranker import reranker
 from langchain_core.retrievers import BaseRetriever
 from langchain_core.documents import Document
 from typing import List
@@ -11,13 +12,14 @@ from pydantic import Field
 # 持久化目录
 CHROMA_DIR = os.path.join(os.path.dirname(os.path.dirname(os.path.dirname(__file__))), "chroma_db")
 
+
 class CppRetriever(BaseRetriever):
     """使用C++分词器的自定义Retriever"""
-    store:object=Field(...)
+    store: object = Field(...)
 
-    def _get_relevant_documents(self,query:str)->List[Document]:
-        results=self.store.similarity_search(query,n_results=3)
-        return [Document(page_content=r)for r in results]
+    def _get_relevant_documents(self, query: str) -> List[Document]:
+        results = self.store.similarity_search(query, n_results=3)
+        return [Document(page_content=r) for r in results]
 
 
 class VectorStore:
@@ -55,16 +57,23 @@ class VectorStore:
             processed_query = ' '.join(tokens)
             print(f"[C++] 原始查询: {query} → 分词后: {processed_query}")
 
+        # 先召回更多（Top-10），再重排
+        recall_n = max(n_results * 2, 10)
         results = self.collection.query(
             query_texts=[processed_query],
-            n_results=n_results
+            n_results=recall_n
         )
-        return results['documents'][0] if results['documents'] else []
+        docs = results['documents'][0] if results['documents'] else []
+
+        # BGE-reranker 重排
+        if docs:
+            return reranker.rerank(query, docs, top_k=n_results)
+        return []
 
     def count(self):
         return self.collection.count()
-    
-    def as_retriever(self,**kwargs):
+
+    def as_retriever(self, **kwargs):
         return CppRetriever(store=self)
 
 
