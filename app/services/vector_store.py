@@ -4,17 +4,16 @@ import hashlib
 import os
 from app.services.cpp_bridge import cpp_bridge
 from app.services.reranker import reranker
+from app.services.hyde import generate_hypothetical_answer
 from langchain_core.retrievers import BaseRetriever
 from langchain_core.documents import Document
 from typing import List
 from pydantic import Field
 
-# 持久化目录
 CHROMA_DIR = os.path.join(os.path.dirname(os.path.dirname(os.path.dirname(__file__))), "chroma_db")
 
 
 class CppRetriever(BaseRetriever):
-    """使用C++分词器的自定义Retriever"""
     store: object = Field(...)
 
     def _get_relevant_documents(self, query: str) -> List[Document]:
@@ -48,7 +47,18 @@ class VectorStore:
         metadatas = [m if m else {"source": "unknown"} for m in metadatas]
         return self.add_documents(documents, metadatas)
 
-    def similarity_search(self, query: str, n_results: int = 5):
+    def similarity_search(self, query: str, n_results: int = 5, use_hyde: bool = False):
+        original_query = query
+
+        if use_hyde:
+            try:
+                hypo = generate_hypothetical_answer(query)
+                print(f"[HyDE] 原问题: {query}")
+                print(f"[HyDE] 假设答案: {hypo[:100]}...")
+                query = hypo
+            except Exception as e:
+                print(f"[HyDE] 生成失败，回退原始查询: {e}")
+
         tokens = cpp_bridge.tokenize(query, self.dict_words)
         if all(len(t) <= 1 for t in tokens):
             processed_query = query
@@ -57,7 +67,6 @@ class VectorStore:
             processed_query = ' '.join(tokens)
             print(f"[C++] 原始查询: {query} → 分词后: {processed_query}")
 
-        # 先召回更多（Top-10），再重排
         recall_n = max(n_results * 2, 10)
         results = self.collection.query(
             query_texts=[processed_query],
@@ -65,9 +74,8 @@ class VectorStore:
         )
         docs = results['documents'][0] if results['documents'] else []
 
-        # BGE-reranker 重排
         if docs:
-            return reranker.rerank(query, docs, top_k=n_results)
+            return reranker.rerank(original_query, docs, top_k=n_results)
         return []
 
     def count(self):
