@@ -1,0 +1,12 @@
+[
+  {"query": "什么是机器学习？", "expected_keywords": ["机器学习", "人工智能", "预测"]},
+  {"query": "深度学习是什么？", "expected_keywords": ["深度学习", "神经网络", "机器学习"]},
+  {"query": "监督学习和无监督学习的区别？", "expected_keywords": ["监督学习", "无监督学习", "标签", "类别"]},
+  {"query": "强化学习是什么？", "expected_keywords": ["强化学习", "奖励", "环境"]},
+  {"query": "人工智能有哪些应用领域？", "expected_keywords": ["人工智能", "自然语言处理", "计算机视觉"]},
+  {"query": "监督学习有哪些常见算法？", "expected_keywords": ["监督学习", "线性回归", "决策树"]},
+  {"query": "无监督学习有哪些常见算法？", "expected_keywords": ["无监督学习", "聚类", "降维"]},
+  {"query": "深度学习和机器学习是什么关系？", "expected_keywords": ["深度学习", "机器学习", "分支"]},
+  {"query": "人工智能是什么？", "expected_keywords": ["人工智能", "计算机科学", "智能"]},
+  {"query": "机器学习算法如何工作？", "expected_keywords": ["机器学习", "数据", "规律"]}
+]
