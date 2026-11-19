@@ -67,7 +67,7 @@ class VectorStore:
             processed_query = ' '.join(tokens)
             print(f"[C++] 原始查询: {query} → 分词后: {processed_query}")
 
-        recall_n = max(n_results * 2, 10)
+        recall_n = max(n_results * 2, 5)
         results = self.collection.query(
             query_texts=[processed_query],
             n_results=recall_n

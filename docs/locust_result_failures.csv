@@ -1,0 +1,4 @@
+Method,Name,Error,Occurrences,First Seen,Last Seen
+POST,/ask,"ConnectionRefusedError(111, 'Connection refused')",198,2026-11-19T10:14:58Z,2026-11-19T10:15:57Z
+POST,/retrieve,"ConnectionRefusedError(111, 'Connection refused')",278,2026-11-19T10:14:58Z,2026-11-19T10:15:57Z
+GET,/health,"ConnectionRefusedError(111, 'Connection refused')",102,2026-11-19T10:14:58Z,2026-11-19T10:15:56Z
